@@ -9,6 +9,20 @@ use Validator;
 
 class CubeController extends Controller
 {
+    public function reset(Request $request)
+    {
+        // reset steps
+        $cube = new Cubes();
+        $cube->reset();
+
+        // Clean form
+        $request->replace(['testcase' => '']);
+        $request->replace(['matrix' => '']);
+        $request->replace(['operations' => '']);
+
+        return redirect('/')->withInput();
+    }
+
     public function command(Request $request)
     {
         $request->flash();
@@ -20,6 +34,7 @@ class CubeController extends Controller
         $cube = new Cubes($request->testcase, $request->operations);
         $matrix = $cube->getMatrix();
 
+        // Validation by step
         if ($cube->step() > 0) {
             $rules['matrix'] = 'required|numeric|max:255';
             $rules['operations'] = 'required|numeric|max:255';
@@ -37,6 +52,7 @@ class CubeController extends Controller
             }
         }
 
+        // Creat matrix
         if (!$matrix && $request->matrix) {
             $matrix = $cube->createMatrix($request->matrix);
         }
@@ -45,6 +61,7 @@ class CubeController extends Controller
         $values = !empty($request->command_value) ? $request->command_value : "";
         $values = preg_split("/[\s,]+/", $values);
 
+        // Display step dynamic
         $cube->step($request->testcase ? ($request->matrix && $request->operations ? 2 : 1) : 0);
 
         if ($validator->fails()) {

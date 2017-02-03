@@ -10,7 +10,7 @@ class Cubes
     private $_testnum = 0;
     private $_opnum = 0;
 
-    function __construct($t, $o)
+    function __construct($t = null, $o = null)
     {
         if (!$this->_testcase) {
             $this->_testcase = $t;
@@ -18,6 +18,16 @@ class Cubes
         if (!$this->_operations) {
             $this->_operations = $o;
         }
+    }
+
+    public function reset() {
+        $this->_testnum = 0;
+        $this->_opnum = 0;
+        $this->_testcase = null;
+        $this->_operations = null;
+        $this->_matrix = null;
+        $this->step(0);
+        session(['results' => []]);
     }
 
     public function step($s = FALSE) {

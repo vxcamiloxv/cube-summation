@@ -17,3 +17,4 @@ Route::get('/', function () {
     ]);
 });
 Route::post('/command', 'CubeController@command');
+Route::post('/reset', 'CubeController@reset');

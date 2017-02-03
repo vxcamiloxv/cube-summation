@@ -62,14 +62,11 @@
             <div class="form-group">
               <div class="col-sm-offset-3 col-sm-6">
                 <button type="submit" class="btn btn-default">
-                  <i class="fa fa-btn fa-plus"></i> Send
+                  <i class="fa fa-btn fa-arrow-circle-right"></i> Send
                 </button>
-              </div>
-            </div>
-            <div class="form-group">
-              <div class="col-sm-offset-3 col-sm-6">
-                <button type="submit" class="btn btn-default">
-                  <i class="fa fa-btn fa-plus"></i> Send
+
+                <button type="submit" class="btn btn-default" formaction="{{ url('reset') }}">
+                  <i class="fa fa-btn fa-eraser"></i> Clear
                 </button>
               </div>
             </div>
