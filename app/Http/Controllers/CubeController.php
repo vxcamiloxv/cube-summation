@@ -1,6 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
+/**
+ * CubeController
+ *
+ * @author      Camilo Quimbayo
+ */
 
 use App\Helpers\Cubes;
 use Illuminate\Http\Request;
@@ -9,6 +14,13 @@ use Validator;
 
 class CubeController extends Controller
 {
+
+    /**
+     * reset cube form and clean other values
+     *
+     * @param object $request of laravel
+     * @return void
+     */
     public function reset(Request $request)
     {
         // reset steps
@@ -23,6 +35,12 @@ class CubeController extends Controller
         return redirect('/')->withInput();
     }
 
+    /**
+     * init cube and send new command
+     *
+     * @param object $request of laravel
+     * @return void
+     */
     public function send(Request $request)
     {
         try {
@@ -88,6 +106,14 @@ class CubeController extends Controller
         }
     }
 
+    /**
+     * update cube matrix
+     *
+     * @param array $values of command
+     * @param object $cube instance
+     * @param object $validator of laravel
+     * @return void
+     */
     private function update($values, $cube, $validator)
     {
         try {
@@ -125,6 +151,14 @@ class CubeController extends Controller
         }
     }
 
+    /**
+     * find coors in matrix and sum the result
+     *
+     * @param array $values of command
+     * @param object $cube instance
+     * @param object $validator of laravel
+     * @return void
+     */
     private function query($values, $cube, $validator)
     {
         try {
