@@ -15,10 +15,17 @@
           @include('errors.common')
 
           <!-- Cube Form -->
-          <form action="{{ url('command')}}" method="POST" class="form-horizontal">
+          @if (isset($message) && strlen($message) > 0)
+            <div class="alert alert-info">
+              <strong>{{$message}}</strong>
+            </div>
+          @endif
+
+          <form action="{{ url('cube')}}" method="POST" class="form-horizontal">
             {{ csrf_field() }}
 
             <!-- Inputs -->
+
             <div class="form-group">
               <label for="testcase" class="col-sm-3 control-label">Test-cases</label>
               <div class="col-sm-6">
@@ -27,7 +34,6 @@
               </div>
             </div>
 
-            hola {{ $step }}
             @if ($step > 0)
               <div class="form-group">
                 <label for="matrix" class="col-sm-3 control-label">Matrix</label>
