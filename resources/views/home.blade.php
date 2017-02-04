@@ -29,7 +29,7 @@
             <div class="form-group">
               <label for="testcase" class="col-sm-3 control-label">Test-cases</label>
               <div class="col-sm-6">
-                <input type="num" name="testcase" id="testcase" class="form-control"
+                <input type="number" name="testcase" id="testcase" class="form-control"
                        value="{{ old('testcase') }}" {{ $step > 0 ? "readonly":"" }}>
               </div>
             </div>
@@ -38,7 +38,7 @@
               <div class="form-group">
                 <label for="matrix" class="col-sm-3 control-label">Matrix</label>
                 <div class="col-sm-6">
-                  <input type="num" name="matrix" id="matrix" class="form-control"
+                  <input type="number" name="matrix" id="matrix" class="form-control"
                          value="{{ old('matrix') }}" {{ $step > 1 ? "readonly":"" }}>
                 </div>
               </div>
@@ -46,7 +46,7 @@
               <div class="form-group">
                 <label for="operations" class="col-sm-3 control-label">Operations</label>
                 <div class="col-sm-6">
-                  <input type="num" name="operations" id="operations" class="form-control"
+                  <input type="number" name="operations" id="operations" class="form-control"
                          value="{{ old('operations') }}" {{ $step > 1 ? "readonly":"" }}>
                 </div>
               </div>
@@ -59,7 +59,7 @@
                     <option>UPDATE</option>
                     <option>QUERY</option>
                   </select>
-                  <input type="num" name="command_value" id="command_value" class="form-control" value="{{ old('command_value') }}">
+                  <input type="text" name="command_value" id="command_value" class="form-control" value="{{ old('command_value') }}">
                 </div>
               </div>
             @endif

@@ -25,55 +25,66 @@ class CubeController extends Controller
 
     public function send(Request $request)
     {
-        $request->flash();
-        $rules = [
-            'testcase' => 'required|numeric|max:255'
-        ];
+        try {
+            $request->flash();
+            $rules = [
+                'testcase' => 'required|numeric|max:255'
+            ];
 
-        $validator = Validator::make($request->all(), $rules);
-        $cube = new Cubes($request->testcase, $request->operations);
-        $matrix = $cube->getMatrix();
-
-        // Validation by step
-        if ($cube->step() > 0) {
-            $rules['matrix'] = 'required|numeric|max:255';
-            $rules['operations'] = 'required|numeric|max:255';
             $validator = Validator::make($request->all(), $rules);
-        }
+            $cube = new Cubes($request->testcase, $request->operations);
+            $matrix = $cube->getMatrix();
 
-        if ($cube->step() > 1) {
-            $rules['command_type'] = 'required|max:255';
-            $rules['command_value'] = 'required|max:255';
-            $validator = Validator::make($request->all(), $rules);
-        }
+            // Validation by step
+            if ($cube->step() > 0) {
+                $rules['matrix'] = 'required|numeric|max:255';
+                $rules['operations'] = 'required|numeric|max:255';
+                $validator = Validator::make($request->all(), $rules);
+            }
 
-        // Creat matrix
-        if (!$matrix && $request->matrix) {
-            $matrix = $cube->createMatrix($request->matrix);
-        }
+            if ($cube->step() > 1) {
+                $rules['command_type'] = 'required|max:255';
+                $rules['command_value'] = 'required|max:255';
+                $validator = Validator::make($request->all(), $rules);
+            }
 
-        $type = $request->command_type;
-        $values = !empty($request->command_value) ? $request->command_value : "";
-        $values = preg_split("/[\s,]+/", trim($values));
+            // Creat matrix
+            if (!$matrix && $request->matrix) {
+                $matrix = $cube->createMatrix($request->matrix);
+            }
 
-        // Display step dynamic
-        $cube->step($request->testcase ? ($request->matrix && $request->operations ? 2 : 1) : 0);
+            $type = $request->command_type;
+            $values = !empty($request->command_value) ? $request->command_value : "";
+            $values = preg_split("/[\s,]+/", trim($values));
+            if (sizeof($values) > 0) {
+                $cube->checkCommand($values);
+            }
 
-        if ($validator->fails()) {
+            // Display step dynamic
+            $cube->step($request->testcase ? ($request->matrix && $request->operations ? 2 : 1) : 0);
+
+            if ($validator->fails()) {
+                return redirect('/')
+                    ->withInput()
+                    ->withErrors($validator);
+
+            } else if (strtoupper($type) === 'UPDATE') {
+                return $this->update($values, $cube, $validator);
+
+            } else if (strtoupper($type) == 'QUERY') {
+                return $this->query($values, $cube, $validator);
+
+            } else {
+                return view('home', [
+                    'step' => $cube->step()
+                ]);
+            }
+        } catch(\Exception $error) {
+            $validator->errors()->add('command_value', $error->getMessage());
+
             return redirect('/')
                 ->withInput()
                 ->withErrors($validator);
-
-        } else if (strtoupper($type) === 'UPDATE') {
-            return $this->update($values, $cube, $validator);
-
-        } else if (strtoupper($type) == 'QUERY') {
-            return $this->query($values, $cube, $validator);
-
-        } else {
-            return view('home', [
-                'step' => $cube->step()
-            ]);
         }
     }
 
@@ -101,7 +112,6 @@ class CubeController extends Controller
 
             return view('home', [
                 'step' => $cube->step(),
-                'test' => $cube->test(),
                 'message' => $message,
                 'results' => $results
             ]);
@@ -141,14 +151,13 @@ class CubeController extends Controller
 
             return view('home', [
                 'step' => $cube->step(),
-                'test' => $cube->test(),
                 'message' => $message,
                 'results' => $results
             ]);
 
         } catch(\Exception $error) {
             $validator->errors()->add('command_value', $error->getMessage());
-            $cube->results = [];
+
             return redirect('/')
                 ->withInput()
                 ->withErrors($validator);

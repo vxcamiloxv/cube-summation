@@ -54,7 +54,7 @@ class Cubes
         $size_args = sizeof($args);
 
         if ($size_args !== $argc) {
-            throw new \Exception(sprintf("args needs to be exactly %d was %d", $argc, $size_args));
+            throw new \Exception(sprintf("Command values needs to be exactly %d was %d", $argc, $size_args));
         };
     }
 
@@ -93,6 +93,13 @@ class Cubes
         $this->_matrix = $m;
     }
 
+    public function checkCommand($values) {
+        if (sizeof($values) > 10) {
+            throw new \Exception("What's up? You have put too many values");
+        }
+        return true;
+    }
+
     public function testCase() {
         if (session('_testnum') + 1 >= $this->_testcase) {
             $this->reset();
@@ -118,21 +125,14 @@ class Cubes
         list($x1, $y1, $z1, $x2, $y2, $z2) = $values;
 
         $coords = [];
-        error_log(implode(",", $values));
 
         foreach ($this->_updated as $update) {
             list($x, $y, $z) = $update;
-            error_log(implode(",", $update));
 
             if ($x >= ($x1-1) && $x < $x2 && $y >= ($y1-1) && $y < $y2 && $z >= ($z1-1) && $z < $z2) {
                 array_push($coords, [$x, $y, $z]);
             }
         }
         return $coords;
-    }
-
-    public function test() {
-        //$this->_opnum = $this->_opnum + 1;
-        return session('_testnum');
     }
 }
