@@ -16,5 +16,5 @@ Route::get('/', function () {
         'step' => session('step', 0)
     ]);
 });
-Route::post('/command', 'CubeController@command');
+Route::post('/cube', 'CubeController@send');
 Route::post('/reset', 'CubeController@reset');

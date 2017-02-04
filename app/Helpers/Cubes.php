@@ -6,12 +6,15 @@ use \Exception;
 
 class Cubes
 {
-    private $_matrix, $_updated, $_testcase, $_operations;
-    private $_testnum = 0;
-    private $_opnum = 0;
+    private $_testcase, $_operations;
+    private $_matrix = [];
+    private $_updated = [];
 
     function __construct($t = null, $o = null)
     {
+        $this->_updated = session('_updated', []);
+        $this->_matrix = session('_matrix', []);
+
         if (!$this->_testcase) {
             $this->_testcase = $t;
         }
@@ -21,13 +24,17 @@ class Cubes
     }
 
     public function reset() {
-        $this->_testnum = 0;
-        $this->_opnum = 0;
         $this->_testcase = null;
         $this->_operations = null;
-        $this->_matrix = null;
+        $this->_matrix = [];
+        $this->_updated = [];
         $this->step(0);
+
+        session(['_updated' => []]);
+        session(['_matrix' => []]);
         session(['results' => []]);
+        session(['_testnum' => 0]);
+        session(['_opnum' => 0]);
     }
 
     public function step($s = FALSE) {
@@ -56,7 +63,9 @@ class Cubes
         for ($i = 0; $i <= $n; $i++) {
             for ($j = 0; $j <= $n; $j++) {
                 for ($k = 0; $k <= $n; $k++) {
-                    return $this->_matrix[$i][$j][$k] = 0;
+                    $this->_matrix[$i][$j][$k] = 0;
+                    session(['_matrix' => $this->_matrix]);
+                    return $this->_matrix;
                 }
             }
         }
@@ -65,7 +74,12 @@ class Cubes
 
     public function updateMatrix($x, $y, $z, $n)
     {
-        $this->$_matrix[$x][$y][$z] = $n;
+        $this->_matrix[$x][$y][$z] = $n;
+        array_push($this->_updated, [$x, $y, $z]);
+
+        session(['_updated' => $this->_updated]);
+        session(['_matrix' => $this->_matrix]);
+
         return $this->_matrix;
     }
 
@@ -80,20 +94,45 @@ class Cubes
     }
 
     public function testCase() {
-        if ($this->_testnum >= $this->_testcase) {
-            $this->setMatrix(null);
-            $this->_testnum = 0;
+        if (session('_testnum') + 1 >= $this->_testcase) {
+            $this->reset();
             return false;
         }
-        $this->_testnum = $this->_testnum + 1;
+        session(['_testnum' => session('_testnum', 0) + 1]);
         return true;
     }
 
     public function operations() {
-        if ($this->_opnum >= $this->_operations) {
+        if (session('_opnum') + 1 >= $this->_operations) {
+            session(['_opnum' => 0]);
+            $this->step(1);
+            $this->testCase();
+
             return false;
         }
-        $this->_opnum = $this->_opnum + 1;
+        session(['_opnum' => session('_opnum', 0) + 1]);
         return true;
+    }
+
+    public function findBounds($values) {
+        list($x1, $y1, $z1, $x2, $y2, $z2) = $values;
+
+        $coords = [];
+        error_log(implode(",", $values));
+
+        foreach ($this->_updated as $update) {
+            list($x, $y, $z) = $update;
+            error_log(implode(",", $update));
+
+            if ($x >= ($x1-1) && $x < $x2 && $y >= ($y1-1) && $y < $y2 && $z >= ($z1-1) && $z < $z2) {
+                array_push($coords, [$x, $y, $z]);
+            }
+        }
+        return $coords;
+    }
+
+    public function test() {
+        //$this->_opnum = $this->_opnum + 1;
+        return session('_testnum');
     }
 }

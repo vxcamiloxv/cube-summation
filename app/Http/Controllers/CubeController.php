@@ -23,7 +23,7 @@ class CubeController extends Controller
         return redirect('/')->withInput();
     }
 
-    public function command(Request $request)
+    public function send(Request $request)
     {
         $request->flash();
         $rules = [
@@ -45,11 +45,6 @@ class CubeController extends Controller
             $rules['command_type'] = 'required|max:255';
             $rules['command_value'] = 'required|max:255';
             $validator = Validator::make($request->all(), $rules);
-
-            if (!$cube->operations()) {
-                $cube->testCase();
-                $cube->step(1);
-            }
         }
 
         // Creat matrix
@@ -59,7 +54,7 @@ class CubeController extends Controller
 
         $type = $request->command_type;
         $values = !empty($request->command_value) ? $request->command_value : "";
-        $values = preg_split("/[\s,]+/", $values);
+        $values = preg_split("/[\s,]+/", trim($values));
 
         // Display step dynamic
         $cube->step($request->testcase ? ($request->matrix && $request->operations ? 2 : 1) : 0);
@@ -85,24 +80,32 @@ class CubeController extends Controller
     private function update($values, $cube, $validator)
     {
         try {
+            $cube->argCount(4, $values);
             $results = session('results', []);
-            $cube->argCount(6, $values);
-            $cube->operations();
+            $setMatrix = $cube->operations();
+            $message = "";
 
-            $x = $values[0]-1;
-            $y = $values[1]-1;
-            $z = $values[2]-1;
-            $w = $values[3];
+            if (!$setMatrix) {
+                $message = $cube->step() == 0 ? "End cube test" : "Send matrix and operations again";
 
-            #$cube->updateMatrix($x, $y, $x, $w);
-            array_push($results, ['value' => "OK", 'date' => date('Y-m-d H:i:s') ]);
-            session(['results' => $results]);
+            } else {
+                $x = $values[0]-1;
+                $y = $values[1]-1;
+                $z = $values[2]-1;
+                $w = $values[3];
+
+                $cube->updateMatrix($x, $y, $x, $w);
+                array_push($results, ['value' => "OK", 'date' => date('Y-m-d H:i:s') ]);
+                session(['results' => $results]);
+            }
 
             return view('home', [
                 'step' => $cube->step(),
-                'success' => TRUE,
+                'test' => $cube->test(),
+                'message' => $message,
                 'results' => $results
             ]);
+
         } catch(\Exception $error) {
             $validator->errors()->add('command_value', $error->getMessage());
             $cube->results = [];
@@ -114,9 +117,41 @@ class CubeController extends Controller
 
     private function query($values, $cube, $validator)
     {
-        $cube->operations();
-        return view('home', [
-            'step' => $cube->step("next")
-        ]);
+        try {
+            $cube->argCount(6, $values);
+            $results = session('results', []);
+            $setMatrix = $cube->operations();
+            $message = "";
+
+            if (!$setMatrix) {
+                $message = $cube->step() == 0 ? "End cube test" : "Send matrix and operations again";
+
+            }
+            $matrix = $cube->getMatrix();
+            $coords = $cube->findBounds($values);
+            $sum = 0;
+
+            foreach ($coords as $c) {
+                list($x,$y,$z) = $c;
+                error_log(implode(",", $c));
+                $sum += $matrix[$x][$y][$z];
+            }
+            array_push($results, ['value' => $sum, 'date' => date('Y-m-d H:i:s') ]);
+            session(['results' => $results]);
+
+            return view('home', [
+                'step' => $cube->step(),
+                'test' => $cube->test(),
+                'message' => $message,
+                'results' => $results
+            ]);
+
+        } catch(\Exception $error) {
+            $validator->errors()->add('command_value', $error->getMessage());
+            $cube->results = [];
+            return redirect('/')
+                ->withInput()
+                ->withErrors($validator);
+        }
     }
 }
